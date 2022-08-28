@@ -6,9 +6,7 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\TownshipController;
 use App\Http\Controllers\GasStationController;
 use App\Http\Controllers\PriceController;
-use App\Models\GasStation;
-use App\Models\Township;
-use App\Models\Region;
+use App\Http\Controllers\AuthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,6 +20,14 @@ use App\Models\Region;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::middleware("api")->prefix("auth")->controller(AuthController::class)->group(function() {
+    Route::post("/register", "register");
+    Route::post("/login", "login");
+    Route::post("/logout", "logout");
+    Route::post("/refresh", "refresh");
+    Route::post("/profile", "profile");
 });
 
 Route::controller(RegionController::class)->group(function() {
