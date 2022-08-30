@@ -9,7 +9,7 @@ use Validator;
 class GasStationController extends Controller
 {
     public function __construct() {
-        $this->middleware("auth:api");
+        $this->middleware("auth:api", ['except' => ['index', 'details']]);
     }
 
     public function index() {
