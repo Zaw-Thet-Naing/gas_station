@@ -7,7 +7,7 @@ use Validator;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthController extends Controller
 {
@@ -90,7 +90,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
         return response()->json([

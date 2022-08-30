@@ -112,9 +112,8 @@ class RegionController extends Controller
             ]);
         }
 
-        $region->name = $input["name"];
         try {
-            $region->save($input);
+            $region->update($input);
             return response()->json([
                 "message" => "succeeded",
                 "new_region" => $region

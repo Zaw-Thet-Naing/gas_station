@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId("township_id")->constrained("townships");
             $table->string("name");
             $table->string("description")->nullable();
-            $table->json("available_fuel");
+            $table->boolean("has_gas")->default(false);
+            $table->json("available_fuel")->nullable();
             $table->string("address");
             $table->decimal("longitude", 11, 8)->nullable();
             $table->decimal("latitude", 10, 8)->nullable();

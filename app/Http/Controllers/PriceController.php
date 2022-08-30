@@ -76,31 +76,29 @@ class PriceController extends Controller
             ]);
         }
 
-        $query = GasStation::select("id", "available_fuel")->where("id", $input["station_id"])->get();
+        $query = GasStation::select("id", "available_fuel", "has_gas")->where("id", $input["station_id"])->get();
 
-        foreach($query as $qq) {
-            foreach($qq["available_fuel"] as $q) {
-                if($q == $input["fuel_type"]) {
-                    try {
-                        $price = Price::create($input);
-                        return response()->json([
-                            'message' => 'succeeded',
-                            'data' => $price
-                        ], 201);
-                    } catch(Throwable $e) {
-                        return response()->json([
-                            'message' => 'Unknown Error',
-                            'data' => []
-                        ],500);
-                    }
+        foreach($query[0]["available_fuel"] as $q) {
+            if($q == $input["fuel_type"]) {
+                try {
+                    $price = Price::create($input);
+                    return response()->json([
+                        'message' => 'succeeded',
+                        'data' => $price
+                    ], 201);
+                } catch(Throwable $e) {
+                    return response()->json([
+                        'message' => 'Unknown Error',
+                        'data' => []
+                    ],500);
                 }
             }
         }
         
         return response()->json([
-            "message" => "The fuel type and station's fuel do not match",
+            "message" => "The fuel type and selected station's fuel do not match",
             "fuel_type" => $input["fuel_type"],
-            "station's fuel" => $qqs
+            "station's fuel" => $query
         ]);
     }
 
@@ -132,18 +130,31 @@ class PriceController extends Controller
             ]);
         }
 
-        try {
-            $price->update($input);
-            return response()->json([
-                "message" => "succeeded",
-                "new_region" => $price
-            ]);
-        } catch(Throwable $e) {
-            return response()->json([
-                'message' => 'Unknown Error',
-                'data' => []
-            ],500);
+        $query = GasStation::select("id", "available_fuel", "has_gas")->where("id", function($qq) use ($request){
+            $qq->from("prices")->select("station_id")->where("id", $request->id);
+        })->get();
+
+        foreach($query[0]["available_fuel"] as $q) {
+            if($q == $input["fuel_type"]) {
+                try {
+                    $price->update($input);
+                    return response()->json([
+                        "message" => "succeeded",
+                        "new_region" => $price
+                    ]);
+                } catch(Throwable $e) {
+                    return response()->json([
+                        'message' => 'Unknown Error',
+                        'data' => []
+                    ],500);
+                }
+            }
         }
+        return response()->json([
+            "message" => "The fuel type and selected station's fuel do not match",
+            "fuel_type" => $input["fuel_type"],
+            "station's fuel" => $query
+        ]);
     }
 
     public function destroy(Request $request) {

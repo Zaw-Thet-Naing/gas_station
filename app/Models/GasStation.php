@@ -12,7 +12,7 @@ class GasStation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["description", "township_id", "name", "available_fuel", "address", "longitude", "latitude"];
+    protected $fillable = ["description", "township_id", "name", "available_fuel", "address", "longitude", "latitude", "has_gas"];
 
     protected $casts = ["available_fuel" => "array"];
 

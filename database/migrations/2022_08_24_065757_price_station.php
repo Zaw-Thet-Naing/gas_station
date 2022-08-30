@@ -13,13 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('prices', function (Blueprint $table) {
-            $table->id();
+        Schema::create("price_station", function(Blueprint $table) {
+            $table->foreignId("price_id")->constrained("prices");
             $table->foreignId("station_id")->constrained("gas_stations");
-            $table->unsignedBigInteger("price");
-            $table->enum("fuel_type", ["92", "95", "97", "diesel", "premium_diesel", "gas"]);
-            $table->date("date");
-            $table->timestamps();
         });
     }
 
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('prices');
+        //
     }
 };
