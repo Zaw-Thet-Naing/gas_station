@@ -15,10 +15,9 @@ return new class extends Migration
     {
         Schema::create('townships', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("region_id");
+            $table->foreignId('region_id')->constrained('regions');
             $table->string("name");
             $table->timestamps();
-            $table->foreign("region_id")->references("id")->on("regions")->onDelete("cascade");
         });
     }
 

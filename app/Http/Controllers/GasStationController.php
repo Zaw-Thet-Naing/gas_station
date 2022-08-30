@@ -8,9 +8,13 @@ use Validator;
 
 class GasStationController extends Controller
 {
+    public function __construct() {
+        $this->middleware("auth:api");
+    }
+
     public function index() {
         try {
-            $stations = GasStation::all();
+            $stations = GasStation::paginate(10);
 
             if(!sizeOf($stations)) {
                 return response()->json([
@@ -40,22 +44,26 @@ class GasStationController extends Controller
                 "message" => "resource not found",
             ]);
         }
-        $station->township->with("region");
+        $station->township;
+        $region = $station->region($request->id);
         $station->prices;
         return response()->json([
             "message" => "succeeded",
-            "details" => $station
+            "details" => [
+                "gas_stations" => $station,
+                "region" => $region
+            ]
         ]);
     }
 
     public function create(Request $request) {
-        $input = $request->only(["price_id", "township_id", "name", "available_fuel", "address", "longitude", "latitude"]);
+        $input = $request->only(["township_id", "name", "available_fuel", "address", "longitude", "latitude"]);
 
         $validator = Validator::make($input, [
             "township_id" => "required|exists:townships,id|integer",
-            "name" => "required|unique:gas_stations|string",
-            "available_fuel" => "required|array|in:92,95,diesel,premium_diesel",
-            "price_id" => "required|exists:prices,id|integer",
+            "name" => "required|string",
+            "description" => "string|max:255",
+            "available_fuel" => "required|array|in:92,95,97,diesel,premium_diesel",
             "address" => "required|string|unique:gas_stations",
             "longitude" => "integer|unique:gas_stations",
             "latitude" => "integer|unique:gas_stations",
@@ -69,7 +77,6 @@ class GasStationController extends Controller
 
         try {
             $station = GasStation::create($input);
-            $station->prices()->attach($input["price_id"]);
             return response()->json([
                 'message' => 'succeeded',
                 'data' => $station
@@ -90,7 +97,7 @@ class GasStationController extends Controller
             ]);
         }
 
-        $input = $request->only(["price_id", "township_id", "name", "available_fuel", "address", "longitude", "latitude"]);
+        $input = $request->only(["description", "township_id", "name", "available_fuel", "address", "longitude", "latitude"]);
 
         if(!$input) {
             return response()->json([
@@ -99,10 +106,10 @@ class GasStationController extends Controller
         }
 
         $validator = Validator::make($input, [
+            "description" => "string|max:255",
             "township_id" => "exists:townships,id|integer",
-            "name" => "unique:gas_stations|string",
-            "available_fuel" => "array|in:92,95,diesel,premium_diesel",
-            "price_id" => "exists:prices,id|integer",
+            "name" => "string",
+            "available_fuel" => "array|in:92,95,97,diesel,premium_diesel",
             "address" => "string|unique:gas_stations",
             "longitude" => "integer|unique:gas_stations",
             "latitude" => "integer|unique:gas_stations",

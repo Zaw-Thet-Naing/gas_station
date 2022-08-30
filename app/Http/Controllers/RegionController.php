@@ -8,9 +8,13 @@ use Validator;
 
 class RegionController extends Controller
 {
+    public function __construct() {
+        $this->middleware("auth:api");
+    }
+
     public function index() {
         try {
-            $regions = Region::all();
+            $regions = Region::paginate(10);
 
             if(!sizeOf($regions)) {
                 return response()->json([

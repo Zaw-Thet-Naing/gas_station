@@ -15,13 +15,13 @@ return new class extends Migration
     {
         Schema::create('gas_stations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger("township_id");
+            $table->foreignId("township_id")->constrained("townships");
             $table->string("name");
+            $table->string("description")->nullable();
             $table->json("available_fuel");
             $table->string("address");
-            $table->decimal("longitude", 10, 8)->nullable();
+            $table->decimal("longitude", 11, 8)->nullable();
             $table->decimal("latitude", 10, 8)->nullable();
-            $table->foreign("township_id")->references("id")->on("townships")->onDelete("cascade");
             $table->timestamps();
         });
     }

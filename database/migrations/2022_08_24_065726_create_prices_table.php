@@ -15,8 +15,9 @@ return new class extends Migration
     {
         Schema::create('prices', function (Blueprint $table) {
             $table->id();
+            $table->foreignId("station_id")->constrained("gas_stations");
             $table->unsignedBigInteger("price");
-            $table->enum("fuel_type", ["92", "95", "diesel", "premium_diesel"]);
+            $table->enum("fuel_type", ["92", "95", "97", "diesel", "premium_diesel"]);
             $table->date("date");
             $table->timestamps();
         });

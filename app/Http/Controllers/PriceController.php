@@ -7,12 +7,17 @@ use Illuminate\Validation\Rules\Enum;
 use App\Enums\FuelType;
 use Validator;
 use App\Models\Price;
+use App\Models\GasStation;
 
 class PriceController extends Controller
 {
+    public function __construct() {
+        $this->middleware("auth:api");
+    }
+
     public function index() {
         try {
-            $prices = Price::all();
+            $prices = Price::paginate(10);
 
             if(!sizeOf($prices)) {
                 return response()->json([
@@ -43,10 +48,16 @@ class PriceController extends Controller
             ]);
         }
         
-        $price->gas_stations;
+        $price->gas_station;
+        $region = $price->regions($request->id);
+        $township = $price->townships($request->id);
         return response()->json([
             "message" => "succeeded",
-            "details" => $price 
+            "details" => [
+                "price" => $price,
+                "region" => $region,
+                "township" => $township
+            ]
         ]);
     }
 
@@ -55,9 +66,8 @@ class PriceController extends Controller
         $validator = Validator::make($input, [
             "price" => "required|integer",
             "date" => "required|date",
-            "fuel_type" => "required",
-            "fuel_type" => [new Enum(FuelType::class)],
-            "station_id" => "required|integer|exists:gas_stations"
+            "fuel_type" => ["required", "string", new Enum(FuelType::class)],
+            "station_id" => "required|integer|exists:gas_stations,id"
         ]);
 
         if($validator->fails()) {
@@ -66,19 +76,32 @@ class PriceController extends Controller
             ]);
         }
 
-        try {
-            $price = Price::create($input);
-            $price->gas_stations()->attach($input["station_id"]);
-            return response()->json([
-                'message' => 'succeeded',
-                'data' => $price
-            ], 201);
-        } catch(Throwable $e) {
-            return response()->json([
-                'message' => 'Unknown Error',
-                'data' => []
-            ],500);
+        $query = GasStation::select("id", "available_fuel")->where("id", $input["station_id"])->get();
+
+        foreach($query as $qq) {
+            foreach($qq["available_fuel"] as $q) {
+                if($q == $input["fuel_type"]) {
+                    try {
+                        $price = Price::create($input);
+                        return response()->json([
+                            'message' => 'succeeded',
+                            'data' => $price
+                        ], 201);
+                    } catch(Throwable $e) {
+                        return response()->json([
+                            'message' => 'Unknown Error',
+                            'data' => []
+                        ],500);
+                    }
+                }
+            }
         }
+        
+        return response()->json([
+            "message" => "The fuel type and station's fuel do not match",
+            "fuel_type" => $input["fuel_type"],
+            "station's fuel" => $qqs
+        ]);
     }
 
     public function update(Request $request) {
@@ -99,8 +122,8 @@ class PriceController extends Controller
         $validator = Validator::make($input, [
             "price" => "integer",
             "date" => "date",
-            "fuel_type" => [new Enum(FuelType::class)],
-            "station_id" => "integer|exists:gas_stations"
+            "fuel_type" => ["string", new Enum(FuelType::class)],
+            "station_id" => "integer|exists:gas_stations,id"
         ]);
 
         if($validator->fails()) {

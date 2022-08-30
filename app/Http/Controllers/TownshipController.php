@@ -8,18 +8,14 @@ use Validator;
 
 class TownshipController extends Controller
 {
+    public function __construct() {
+        $this->middleware("auth:api");
+    }
+
     public function index(Request $request) {
-        // $region = $request->region;
-        $townships = Township::all();
+        $townships = Township::paginate(10);
 
         try {
-            // $townships = Township::with(['region'])->whereHas('region', fn($query) => $query->where('name',$region))->get();
-
-            // // if(isset($region))
-            // // {
-            // //     $townships->region->where('name', $region)->get();
-            // // }
-
             if(!sizeOf($townships)) {
                 return response()->json([
                     "message" => "No data yet"
